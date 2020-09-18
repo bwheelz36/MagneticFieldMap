@@ -1,0 +1,122 @@
+# Set threading options:
+------------------------------------------------------------
+i:Ts/NumberOfThreads = -1  # defaults to 1
+
+# Add World:
+------------------------------------------------------------
+s:Ge/World/Type = "TsBox"
+s:Ge/World/Material = "Vacuum"
+d:Ge/World/HLX = 1.2 * Ge/V3DBox/Field3D/RMax mm # Half Length
+d:Ge/World/HLY = 1.2 * Ge/V3DBox/Field3D/RMax mm
+d:Ge/World/HLZ = 1.2 * Ge/V3DBox/Field3D/HL mm
+d:Ge/World/TransX = 0. m
+d:Ge/World/TransY = 0. m
+d:Ge/World/TransZ = 0. m
+d:Ge/World/RotX = 0. deg
+d:Ge/World/RotY = 0. deg
+d:Ge/World/RotZ = 0. deg
+
+################################################################
+# Add magnetic fields (mainly copied from PurgingMagnet_move.txt)
+-----------------------------------------------------------
+
+s:Ge/MagGroup/Type    = "Group"
+s:Ge/MagGroup/Parent  = "World"
+d:Ge/MagGroup/TransX  = 0. m
+d:Ge/MagGroup/TransY  = 0. m
+d:Ge/MagGroup/TransZ  = 0. m
+d:Ge/MagGroup/RotX    = 0. deg
+d:Ge/MagGroup/RotY    = 0. deg
+d:Ge/MagGroup/RotZ    = 0. deg
+
+
+s:Ge/V3DBox/Field3D/Type     = "TsCylinder"
+d:Ge/V3DBox/Field3D/RMin     = 0.0 mm
+d:Ge/V3DBox/Field3D/RMax     = 30 mm
+d:Ge/V3DBox/Field3D/SPhi     = 0. deg
+d:Ge/V3DBox/Field3D/DPhi     = 360. deg
+s:Ge/V3DBox/Field3D/Field = "TsMagneticFieldMap2"
+s:Ge/V3DBox/Field3D/MagneticField3DTable = "/home/bwhelan/Dropbox (Sydney Uni)/Projects/PhaserSims/cst/ScanningFieldForImport/ScanningField_Opera.TABLE"
+# s:Ge/V3DBox/Field3D/MagneticField3DTable = "FakeData_Opera.TABLE"
+s:Ge/V3DBox/Field3D/Parent   = "World"
+s:Ge/V3DBox/Field3D/Material = "Vacuum"
+d:Ge/V3DBox/Field3D/HL 	 = 200 mm
+b:Ge/V3DBox/Field3D/Include  = "True"
+s:Ge/V3DBox/Field3D/Stepper = "ExplictEuler"
+d:Ge/V3DBox/Field3D/StepMinimum = 0.1 mm
+d:Ge/V3DBox/Field3D/DeltaChord = 0.1 mm
+
+#################################################################
+
+# Add scorer on the downstream face of the cylinder
+-----------------------------------------------------------
+s:Sc/PhaseSpaceFromColl/Quantity                    = "PhaseSpace"
+b:Sc/PhaseSpaceFromColl/OutputToConsole             = "False"
+s:Sc/PhaseSpaceFromColl/Surface                     = "V3DBox/Field3D/ZMinusSurface"
+s:Sc/PhaseSpaceFromColl/OutputType                  = "ASCII" # ASCII, Binary, Limited or ROOT
+s:Sc/PhaseSpaceFromColl/OutputFile                  = "BeamSteeringTest"
+i:Sc/PhaseSpaceFromColl/OutputBufferSize            = 1000
+s:Sc/PhaseSpaceFromColl/IfOutputFileAlreadyExists   = "Overwrite"
+
+
+# Nozzle is a Group that holds the collimator and the target
+------------------------------------------------------------
+s:Ge/Nozzle/Type = "Group"
+s:Ge/Nozzle/Parent = "World"
+d:Ge/Nozzle/TransZ = Ge/V3DBox/Field3D/HL mm
+
+# # Electron source position
+# ------------------------------------------------------------
+s:Ge/ElectronSource/Parent = "Nozzle"
+s:Ge/ElectronSource/Type="Group"
+d:Ge/ElectronSource/RMax = 5. mm
+d:Ge/ElectronSource/TransZ = 0 mm
+d:Ge/ElectronSource/RotX = 180. deg
+s:Ge/ElectronSource/Material = Ge/World/Material
+s:Ge/ElectronSource/Color = "yellow"
+sc:Ge/ElectronSource/DrawingStyle = "Solid"
+
+
+# # # Beam parameters:
+# # ------------------------------------------------------------
+s:So/Beam/Type                     = "Beam"
+sc:So/Beam/Component                = "ElectronSource"
+sc:So/Beam/BeamParticle             = "e-"
+dc:So/Beam/BeamEnergy               = 10.0 MeV
+uc:So/Beam/BeamEnergySpread         = 0
+sc:So/Beam/BeamPositionDistribution = "Flat" # None, Flat or Gaussian
+sc:So/Beam/BeamAngularDistribution  = "Flat" # None, Flat or Gaussian
+sc:So/Beam/BeamPositionCutoffShape = "Ellipse"
+dc:So/Beam/BeamPositionCutoffX = .1 mm
+dc:So/Beam/BeamPositionCutoffY = .1 mm
+dc:So/Beam/BeamAngularCutoffX = .1 deg
+dc:So/Beam/BeamAngularCutoffY = .1 deg
+ic:So/Beam/NumberOfHistoriesInRun = 1
+
+
+# Graphics View and trajectory filters:
+------------------------------------------------------------
+b:Gr/Enable = "True"  # Enable/Disable graphics
+s:Gr/ViewA/Type              = "OpenGL"
+dc:Gr/ViewA/Theta            = 90 deg
+dc:Gr/ViewA/Phi              = 0 deg
+uc:Gr/ViewA/TransX           = 0
+uc:Gr/ViewA/TransY           = 0.
+sc:Gr/ViewA/Projection       = "Orthogonal"
+dc:Gr/ViewA/PerspectiveAngle = 30 deg
+uc:Gr/ViewA/Zoom             = 1
+bc:Gr/ViewA/IncludeStepPoints = "False"
+bc:Gr/ViewA/HiddenLineRemovalForTrajectories = "True"
+i:Gr/ViewA/MagneticFieldArrowDensity = 20
+
+# Physics
+------------------------------------------------------------
+sv:Ph/Default/Modules = 1 "g4em-standard_opt0"
+b:Ph/ListProcesses = "True"
+
+------------------------------------------------------------
+# QT
+# --
+Ts/UseQt = Gr/Enable 
+Ts/PauseBeforeQuit = Gr/Enable 
+Ts/IncludeDefaultGeant4QtWidgets = "T"
