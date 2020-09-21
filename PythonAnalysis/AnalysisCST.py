@@ -7,17 +7,18 @@ CSTfileIN = '../Data/ScanningField.txt'  # original data
 OperaFileIn = '../Data/ScanningField_Opera.TABLE'  # data converted to opera format. this is read in topas
 TopasFileIn = '../Data/ScanningFieldTopasFieldsExport2'  # data from topas
 
-MF = MagneticFieldMap(CSTfile=CSTfileIN, TopasCompareFile=TopasFileIn, OperaFile=OperaFileIn)
-# MF.ReadOperaData()  # you can alternatively read in CST file with MF.ReadCSTdata
-MF.ReadCSTdata()
+MF = MagneticFieldMap(CSTfile=None, TopasCompareFile=TopasFileIn, OperaFile=OperaFileIn)
+MF.ReadOperaData()
+# MF.ReadCSTdata()  # you can alternatively read in the CST file with MF.ReadCSTdata
 MF.ReadTopasData()
-# MF.CompareCSTFieldsToTopasFields()
-# MF.CSTversusTopasPlots()
-MF.OutputOperaFormat()
-# MF.PlotTopas00Z()
+MF.CompareCSTFieldsToTopasFields()
+MF.CSTversusTopasPlots()
+# MF.OutputOperaFormat()  # converts CST format to opera format
+# MF.PlotTopas00Z()  # plots along central axis. very crude.
 # MF.Plot00z()
 
 # check some individual points (also pretty slow):
+# ------------------------------------------------
 # note that I have chosen these points as they all exist in the topas data (which is pretty sparse), so interpolation error should not be an
 # issue
 
