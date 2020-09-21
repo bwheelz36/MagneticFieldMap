@@ -13,6 +13,7 @@ try:
     from scipy.interpolate import griddata
 except ImportError:
     logging.warning('you require several non core libraries to run this code, see import statements')
+    logging.warning('use pip to install')
     sys.exit()
 
 
@@ -87,7 +88,7 @@ class MagneticFieldMap:
 
     def ReadPurgeMagnetOpera(self):
         """
-        slightly different format
+        slightly different format, need to skip 10 rows instead of 9
         :return:
         """
 
@@ -142,32 +143,32 @@ class MagneticFieldMap:
             inc = inc+1
 
 
-        # ## the same thing for By and Bz; comment out for speed up
+        ## the same thing for By and Bz; comment out for speed up
 
-        # tic = perf_counter()
-        # CST_By= griddata((self.x,self.y,self.z), self.By, (X,Y,Z), method='linear')
-        # Topas_By = griddata((self.tpsx, self.tpsy, self.tpsz), self.tpsBy, (X,Y,Z), method='linear')
-        # toc = perf_counter()
-        # print(f'Interpolating {np.shape(X)[0]} points from a grid of {self.x.shape[0]} points took {toc-tic: 1.1f} seconds')
-        # print('Comparison of By:')
-        # print('-----------------')
-        # print('x    y    z    By(Original)    Bx(Topas')
-        # inc = 0
-        # for i in X:
-        #     print(f'{X[inc]: 1.0f}    {Y[inc]: 1.0f}    {Z[inc]: 1.0f}    {CST_By[inc]: 1.2e}    {Topas_By[inc]: 1.2e}')
-        #     inc= inc+1
-        #
-        # CST_Bz = griddata((self.x,self.y,self.z), self.Bz, (X,Y,Z), method='linear')
-        # Topas_Bz = griddata((self.tpsx, self.tpsy, self.tpsz), self.tpsBz, (X,Y,Z), method='linear')
-        # toc = perf_counter()
-        # print(f'Interpolating {np.shape(X)[0]} points from a grid of {self.x.shape[0]} points took {toc-tic: 1.1f} seconds')
-        # print('Comparison of Bz:')
-        # print('-----------------')
-        # print('x    y    z    Bz(Original)    Bx(Topas')
-        # inc = 0
-        # for i in X:
-        #     print(f'{X[inc]: 1.0f}    {Y[inc]: 1.0f}    {Z[inc]: 1.0f}    {CST_Bz[inc]: 1.2e}    {Topas_Bz[inc]: 1.2e}')
-        #     inc= inc+1
+        tic = perf_counter()
+        CST_By= griddata((self.x,self.y,self.z), self.By, (X,Y,Z), method='linear')
+        Topas_By = griddata((self.tpsx, self.tpsy, self.tpsz), self.tpsBy, (X,Y,Z), method='linear')
+        toc = perf_counter()
+        print(f'Interpolating {np.shape(X)[0]} points from a grid of {self.x.shape[0]} points took {toc-tic: 1.1f} seconds')
+        print('Comparison of By:')
+        print('-----------------')
+        print('x    y    z    By(Original)    By(Topas')
+        inc = 0
+        for i in X:
+            print(f'{X[inc]: 1.0f}    {Y[inc]: 1.0f}    {Z[inc]: 1.0f}    {CST_By[inc]: 1.4e}    {Topas_By[inc]: 1.4e}')
+            inc= inc+1
+
+        CST_Bz = griddata((self.x,self.y,self.z), self.Bz, (X,Y,Z), method='linear')
+        Topas_Bz = griddata((self.tpsx, self.tpsy, self.tpsz), self.tpsBz, (X,Y,Z), method='linear')
+        toc = perf_counter()
+        print(f'Interpolating {np.shape(X)[0]} points from a grid of {self.x.shape[0]} points took {toc-tic: 1.1f} seconds')
+        print('Comparison of Bz:')
+        print('-----------------')
+        print('x    y    z    Bz(Original)    Bz(Topas')
+        inc = 0
+        for i in X:
+            print(f'{X[inc]: 1.0f}    {Y[inc]: 1.0f}    {Z[inc]: 1.0f}    {CST_Bz[inc]: 1.4e}    {Topas_Bz[inc]: 1.4e}')
+            inc= inc+1
 
     def CompareCSTFieldsToTopasFields(self):
         """
@@ -230,11 +231,56 @@ class MagneticFieldMap:
         axs[2].grid(True)
         axs[2].set_title('Bz')
 
+    def PlotTopas00Z(self):
+        """
+        Attempt to make a plot of B(0,0,z) as a function of z. very crude
+
+        Note this is dependant on having sufficient data in the topas file....
+        no error handling is included
+        :return:
+        """
+
+        # plot Bz(0,0,z)
+        #
+        tol = 0  # increase to include points further from axis
+        xind = abs(self.tpsx)<=tol
+        yind = abs(self.tpsy)<=tol
+        ind = np.logical_and(xind,yind)
+        Bx_plot = self.tpsBx[ind]
+        By_plot = self.tpsBy[ind]
+        Bz_plot = self.tpsBz[ind]
+        B_plot = np.sqrt(Bx_plot**2 + By_plot**2 + Bz_plot**2)
+
+        z_plot = self.tpsz[ind]
+        plt.figure()
+        plt.plot(z_plot,B_plot,':x')
+        plt.title('Bx(0,0,z) extracted from topas data')
+
+    def Plot00z(self):
+        """
+        plot B(0,0,z) versus Z for the input data (be it opera or CST file)
+        :return:
+        """
+
+        tol = 0
+        xind = abs(self.x)<=tol
+        yind = abs(self.y)<=tol
+        ind = np.logical_and(xind,yind)
+        Bx_plot = self.Bx[ind]
+        By_plot = self.By[ind]
+        Bz_plot = self.Bz[ind]
+        B_plot = np.sqrt(Bx_plot**2 + By_plot**2 + Bz_plot**2)
+
+        z_plot = self.z[ind]
+        plt.figure()
+        plt.plot(z_plot,Bx_plot,':x')
+        plt.title('Bx(0,0,z) extracted from input data')
+
     def OutputOperaFormat(self):
         """
-        not set up properly atm
+        If a CST file is read in you can use this to output the opera format.
         """
-        sys.exit('this doesnt work at the moment')
+
 
         FakeField = np.zeros(self.Bx.shape[0])  # for making table of zeros
 
@@ -254,24 +300,24 @@ class MagneticFieldMap:
         # plt.plot(z_plot,Bx_plot,':x')
 
         #2. Output as opera format:
-        PathName, Filetype = os.path.splitext(FileIn)
+        PathName, Filetype = os.path.splitext(self.CSTfile)
         PathName, FileName = os.path.split(PathName)
         OutFile = PathName + '/' + FileName + '_Opera.TABLE'
 
 
         HeaderString = '\n' + str(np.unique(self.x).shape[0]) + ' ' + str(np.unique(self.y).shape[0]) + ' ' + str(np.unique(self.z).shape[0]) + \
-                       '\n 1 X [mm]\n 2 Y [mm]\n 3 Z [mm]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'  # not sure if this line matters or not
-        DataOut = [x,y,z,Bx,By,Bz]
+                       '\n 1 X [M]\n 2 Y [M]\n 3 Z [M]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'
+        DataOut = [self.x/1e3,self.y/1e3,self.z/1e3,self.Bx,self.By,self.Bz]
         DataOut = np.transpose(DataOut)
         FormatSpec = ['%11.5f', '%11.5f', '%11.5f', '%11.5e', '%11.5e', '%11.5e']
         np.savetxt(OutFile, DataOut, fmt=FormatSpec, delimiter='      ', header=HeaderString,comments='')
 
         ## Make fake data of zeros for trouble shooting
         OutFile = PathName + '/' + 'FakeData_Opera.TABLE'
-        HeaderString = '\n' + str(np.unique(x).shape[0]) + ' ' + str(np.unique(y).shape[0]) + ' ' + str(
-            np.unique(z).shape[0]) + \
-                       '\n 1 X [M]\n 2 Y [M]\n 3 Z [M]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'  # not sure if this line matters or not
-        DataOut = [x, y, z, FakeField, FakeField, FakeField]
+        HeaderString = '\n' + str(np.unique(self.x).shape[0]) + ' ' + str(np.unique(self.y).shape[0]) + ' ' + str(
+            np.unique(self.z).shape[0]) + \
+                       '\n 1 X [M]\n 2 Y [M]\n 3 Z [M]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'
+        DataOut = [self.x/1e3, self.y/1e3, self.z/1e3, FakeField, FakeField, FakeField]
         DataOut = np.transpose(DataOut)
         FormatSpec = ['%11.5f', '%11.5f', '%11.5f', '%11.5e', '%11.5e', '%11.5e']
         np.savetxt(OutFile, DataOut, fmt=FormatSpec, delimiter='      ', header=HeaderString, comments='')

@@ -29,18 +29,18 @@ d:Ge/MagGroup/RotX    = 0. deg
 d:Ge/MagGroup/RotY    = 0. deg
 d:Ge/MagGroup/RotZ    = 0. deg
 
-
+## the CST/Opera data is from a cylinder of length 400 mm and radius 30 mm. The field is imported into a cylinder of the same dimensions
 s:Ge/V3DBox/Field3D/Type     = "TsCylinder"
 d:Ge/V3DBox/Field3D/RMin     = 0.0 mm
-d:Ge/V3DBox/Field3D/RMax     = 30 mm
+d:Ge/V3DBox/Field3D/RMax     = 3 cm
 d:Ge/V3DBox/Field3D/SPhi     = 0. deg
 d:Ge/V3DBox/Field3D/DPhi     = 360. deg
 s:Ge/V3DBox/Field3D/Field = "TsMagneticFieldMap2"
-s:Ge/V3DBox/Field3D/MagneticField3DTable = "/home/bwhelan/Dropbox (Sydney Uni)/Projects/PhaserSims/cst/ScanningFieldForImport/ScanningField_Opera.TABLE"
+s:Ge/V3DBox/Field3D/MagneticField3DTable = "../Data/ScanningField_Opera.TABLE"
 # s:Ge/V3DBox/Field3D/MagneticField3DTable = "FakeData_Opera.TABLE"
 s:Ge/V3DBox/Field3D/Parent   = "World"
 s:Ge/V3DBox/Field3D/Material = "Vacuum"
-d:Ge/V3DBox/Field3D/HL 	 = 200 mm
+d:Ge/V3DBox/Field3D/HL 	 = 20 cm
 b:Ge/V3DBox/Field3D/Include  = "True"
 s:Ge/V3DBox/Field3D/Stepper = "ExplictEuler"
 d:Ge/V3DBox/Field3D/StepMinimum = 0.1 mm
@@ -50,27 +50,21 @@ d:Ge/V3DBox/Field3D/DeltaChord = 0.1 mm
 
 # Add scorer on the downstream face of the cylinder
 -----------------------------------------------------------
-s:Sc/PhaseSpaceFromColl/Quantity                    = "PhaseSpace"
-b:Sc/PhaseSpaceFromColl/OutputToConsole             = "False"
-s:Sc/PhaseSpaceFromColl/Surface                     = "V3DBox/Field3D/ZMinusSurface"
-s:Sc/PhaseSpaceFromColl/OutputType                  = "ASCII" # ASCII, Binary, Limited or ROOT
-s:Sc/PhaseSpaceFromColl/OutputFile                  = "BeamSteeringTest"
-i:Sc/PhaseSpaceFromColl/OutputBufferSize            = 1000
-s:Sc/PhaseSpaceFromColl/IfOutputFileAlreadyExists   = "Overwrite"
+# s:Sc/PhaseSpaceFromColl/Quantity                    = "PhaseSpace"
+# b:Sc/PhaseSpaceFromColl/OutputToConsole             = "False"
+# s:Sc/PhaseSpaceFromColl/Surface                     = "V3DBox/Field3D/ZMinusSurface"
+# s:Sc/PhaseSpaceFromColl/OutputType                  = "ASCII" # ASCII, Binary, Limited or ROOT
+# s:Sc/PhaseSpaceFromColl/OutputFile                  = "BeamSteeringTest"
+# i:Sc/PhaseSpaceFromColl/OutputBufferSize            = 1000
+# s:Sc/PhaseSpaceFromColl/IfOutputFileAlreadyExists   = "Overwrite"
 
-
-# Nozzle is a Group that holds the collimator and the target
-------------------------------------------------------------
-s:Ge/Nozzle/Type = "Group"
-s:Ge/Nozzle/Parent = "World"
-d:Ge/Nozzle/TransZ = Ge/V3DBox/Field3D/HL mm
 
 # # Electron source position
 # ------------------------------------------------------------
-s:Ge/ElectronSource/Parent = "Nozzle"
+s:Ge/ElectronSource/Parent = "World"
 s:Ge/ElectronSource/Type="Group"
 d:Ge/ElectronSource/RMax = 5. mm
-d:Ge/ElectronSource/TransZ = 0 mm
+d:Ge/ElectronSource/TransZ = Ge/V3DBox/Field3D/HL cm
 d:Ge/ElectronSource/RotX = 180. deg
 s:Ge/ElectronSource/Material = Ge/World/Material
 s:Ge/ElectronSource/Color = "yellow"
@@ -96,7 +90,7 @@ ic:So/Beam/NumberOfHistoriesInRun = 1
 
 # Graphics View and trajectory filters:
 ------------------------------------------------------------
-b:Gr/Enable = "True"  # Enable/Disable graphics
+b:Gr/Enable = "T"  # Enable/Disable graphics
 s:Gr/ViewA/Type              = "OpenGL"
 dc:Gr/ViewA/Theta            = 90 deg
 dc:Gr/ViewA/Phi              = 0 deg
