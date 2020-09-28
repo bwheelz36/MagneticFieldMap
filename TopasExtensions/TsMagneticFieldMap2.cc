@@ -209,6 +209,8 @@ void TsMagneticFieldMap2::ResolveParameters() {
 			fFieldX[ix][iy][iz] = bx * headerUnits["BX"];
 			fFieldY[ix][iy][iz] = by * headerUnits["BY"];
 			fFieldZ[ix][iy][iz] = bz * headerUnits["BZ"];
+			
+			// G4cerr << "B_global:  " << xval << " " << yval << " " << zval << " " << bx << " " << by << " " << bz << G4endl;
 
 			iz++;
 			if (iz == fNZ) {
@@ -333,6 +335,8 @@ void TsMagneticFieldMap2::GetFieldValue(const G4double Point[3], G4double* Field
 		fFieldX[xIndex+1][yIndex  ][zIndex+1] *    xLocal  * (1-yLocal) *    zLocal  +
 		fFieldX[xIndex+1][yIndex+1][zIndex  ] *    xLocal  *    yLocal  * (1-zLocal) +
 		fFieldX[xIndex+1][yIndex+1][zIndex+1] *    xLocal  *    yLocal  *    zLocal;
+		
+		
 		FieldY =
 		fFieldY[xIndex  ][yIndex  ][zIndex  ] * (1-xLocal) * (1-yLocal) * (1-zLocal) +
 		fFieldY[xIndex  ][yIndex  ][zIndex+1] * (1-xLocal) * (1-yLocal) *    zLocal  +
@@ -342,6 +346,7 @@ void TsMagneticFieldMap2::GetFieldValue(const G4double Point[3], G4double* Field
 		fFieldY[xIndex+1][yIndex  ][zIndex+1] *    xLocal  * (1-yLocal) *    zLocal  +
 		fFieldY[xIndex+1][yIndex+1][zIndex  ] *    xLocal  *    yLocal  * (1-zLocal) +
 		fFieldY[xIndex+1][yIndex+1][zIndex+1] *    xLocal  *    yLocal  *    zLocal;
+		
 		FieldZ =
 		fFieldZ[xIndex  ][yIndex  ][zIndex  ] * (1-xLocal) * (1-yLocal) * (1-zLocal) +
 		fFieldZ[xIndex  ][yIndex  ][zIndex+1] * (1-xLocal) * (1-yLocal) *    zLocal  +
@@ -360,7 +365,8 @@ void TsMagneticFieldMap2::GetFieldValue(const G4double Point[3], G4double* Field
 		Field[0] = B_global.x() ;
 		Field[1] = B_global.y() ;
 		Field[2] = B_global.z() ;
-		G4cerr << "B_global:  " << Point[0] << " " << Point[1] << " " << Point[2] << " " << B_global.x() << " " << B_global.y()  << " " << B_global.y()  << G4endl;
+		
+		G4cerr << "B_global:  " << Point[0] << " " << Point[1] << " " << Point[2] << " " << B_global.x() << " " << B_global.y()  << " " << B_global.z()  << G4endl;
 		// G4cerr << "B_local:  " << Point[0] << " " << Point[1] << " " << Point[2] << " " << B_local.x() << " " << B_local.y()  << " " << B_local.y()  << G4endl;
 	} else {
 		// G4cerr << "Setting " << Point[0] << " " << Point[1] << " " << Point[2] << " to zero" << G4endl;

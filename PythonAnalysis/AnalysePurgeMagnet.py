@@ -9,16 +9,18 @@ TopasFileIn = '../Data/PurgeMagnetTopasExport'  # data from topas
 
 MF = MagneticFieldMap(CSTfile=None, TopasCompareFile=TopasFileIn, OperaFile=OperaFileIn)
 MF.ReadPurgeMagnetOpera()  # you can alternatively read in CST file with MF.ReadCSTdata
-MF.ReadTopasData()
-MF.CompareCSTFieldsToTopasFields()
-MF.CSTversusTopasPlots()
+# MF.Plot00z()
+MF.PlotCoords()
+# MF.ReadTopasData()
+# MF.CompareCSTFieldsToTopasFields()
+# MF.CSTversusTopasPlots()
 
 # check some individual points (also pretty slow; adding more points does not slow down further):
 # note that I have chosen these points as they all exist in the topas data (which is pretty sparse), so interpolation error should not be an
 # issue
-X = [0.0629755]
-Y = [119.909]
-Z = [-226.809]
-
-
-MF.CheckXYZpoints(X, Y, Z)
+# X = [0.0629755]
+# Y = [119.909]
+# Z = [-226.809]
+#
+#
+# MF.CheckXYZpoints(X, Y, Z)

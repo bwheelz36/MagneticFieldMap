@@ -57,7 +57,7 @@ class MagneticFieldMap:
         self.By = Data[:, 5]
         self.Bz = Data[:, 7]
 
-
+        self.__SortCSTData()
         # # Print some info about the coordinates
         # print(f'Min x:  {min(x): 1.1f}    Max x: {max(x): 1.1f}')
         # print(f'Min y:  {min(y): 1.1f}    Max y: {max(y): 1.1f}')
@@ -85,6 +85,23 @@ class MagneticFieldMap:
         self.Bx = Data[:, 3]
         self.By = Data[:, 4]
         self.Bz = Data[:, 5]
+
+    def __SortCSTData(self):
+        """
+        This is bloody annoying.
+        Resort the data ordering to match what topas expects
+        :return:
+        """
+        my_list = [self.x,self.y,self.z]
+        my_list = np.array(my_list)
+        ind = np.lexsort((my_list[2, :], my_list[1, :], my_list[0, :]))
+
+        self.x = self.x[ind]
+        self.y = self.y[ind]
+        self.z = self.z[ind]
+        self.Bx = self.Bx[ind]
+        self.By = self.By[ind]
+        self.Bz = self.Bz[ind]
 
     def ReadPurgeMagnetOpera(self):
         """
@@ -255,6 +272,7 @@ class MagneticFieldMap:
         plt.figure()
         plt.plot(z_plot,B_plot,':x')
         plt.title('Bx(0,0,z) extracted from topas data')
+        plt.ylim([0,.1])
 
     def Plot00z(self):
         """
@@ -262,7 +280,7 @@ class MagneticFieldMap:
         :return:
         """
 
-        tol = 0
+        tol = 20
         xind = abs(self.x)<=tol
         yind = abs(self.y)<=tol
         ind = np.logical_and(xind,yind)
@@ -276,28 +294,27 @@ class MagneticFieldMap:
         plt.plot(z_plot,Bx_plot,':x')
         plt.title('Bx(0,0,z) extracted from input data')
 
+    def PlotCoords(self):
+        """
+        plot X, Y, Z versus indice
+        does topas assume some form of ordering for the indices??
+        :return:
+        """
+        figure,axs = plt.subplots(1,3)
+
+        axs[0].plot(self.x)
+        axs[1].plot(self.y)
+        axs[2].plot(self.z)
+
+
     def OutputOperaFormat(self):
         """
         If a CST file is read in you can use this to output the opera format.
         """
 
+        FakeField = np.ones(self.Bx.shape[0]) * .002 # for making table of zeros
+        FakeField2 =np.zeros(self.Bx.shape[0]) # for making table of zeros
 
-        FakeField = np.zeros(self.Bx.shape[0])  # for making table of zeros
-
-        # should move this to its own function:
-        # # plot Bz(0,0,z)
-        # tol = 1
-        # xind = abs(x)<=tol
-        # yind = abs(y)<=tol
-        # ind = np.logical_and(xind,yind)
-        # Bx_plot = Bx[ind]
-        # By_plot = By[ind]
-        # Bz_plot = Bz[ind]
-        # B_plot = np.sqrt(Bx_plot**2 + By_plot**2 + Bz_plot**2)
-        #
-        # z_plot = z[ind]
-        # plt.figure()
-        # plt.plot(z_plot,Bx_plot,':x')
 
         #2. Output as opera format:
         PathName, Filetype = os.path.splitext(self.CSTfile)
@@ -317,7 +334,9 @@ class MagneticFieldMap:
         HeaderString = '\n' + str(np.unique(self.x).shape[0]) + ' ' + str(np.unique(self.y).shape[0]) + ' ' + str(
             np.unique(self.z).shape[0]) + \
                        '\n 1 X [M]\n 2 Y [M]\n 3 Z [M]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'
-        DataOut = [self.x/1e3, self.y/1e3, self.z/1e3, FakeField, FakeField, FakeField]
+        FakeField = np.ones(self.Bx.shape[0]) * .02 # for making table of constant data
+        FakeField2 =np.zeros(self.Bx.shape[0]) # for making table of zeros
+        DataOut = [self.x/1e3, self.y/1e3, self.z/1e3, FakeField, FakeField2, FakeField2]
         DataOut = np.transpose(DataOut)
         FormatSpec = ['%11.5f', '%11.5f', '%11.5f', '%11.5e', '%11.5e', '%11.5e']
         np.savetxt(OutFile, DataOut, fmt=FormatSpec, delimiter='      ', header=HeaderString, comments='')
