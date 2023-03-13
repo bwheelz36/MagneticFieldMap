@@ -19,7 +19,8 @@ except ImportError:
 
 class MagneticFieldMap:
 
-    def __init__(self,CSTfile=None,TopasCompareFile=None,OperaFile=None,Zoffset = None):
+    def __init__(self,CSTfile=None,TopasCompareFile=None,OperaFile=None,Zoffset = None,
+                 ComsolFile=None):
         """
         just attaches the file locations to self for later processing
         crude error checking performed
@@ -30,12 +31,17 @@ class MagneticFieldMap:
         else:
             logging.info('no CST data provided')
 
+        if not ComsolFile is None:
+            self.ComsolFile = ComsolFile
+        else:
+            logging.info('no CST data provided')
+
         if not OperaFile is None:
             self.OperaFile = OperaFile
         else:
             logging.info('no Opera data provided')
 
-        if (OperaFile==None) & (CSTfile==None):
+        if (OperaFile is None) and (CSTfile is None) and (self.ComsolFile is None):
             logging.warning('cant do anything with no input data. Exiting')
             sys.exit()
         elif (not OperaFile is None) & (not CSTfile is None):
@@ -57,7 +63,7 @@ class MagneticFieldMap:
         self.By = Data[:, 5]
         self.Bz = Data[:, 7]
 
-        self.__SortCSTData()
+        self.sort_field_data()
         # # Print some info about the coordinates
         # print(f'Min x:  {min(x): 1.1f}    Max x: {max(x): 1.1f}')
         # print(f'Min y:  {min(y): 1.1f}    Max y: {max(y): 1.1f}')
@@ -86,7 +92,7 @@ class MagneticFieldMap:
         self.By = Data[:, 4]
         self.Bz = Data[:, 5]
 
-    def __SortCSTData(self):
+    def sort_field_data(self):
         """
         This is bloody annoying.
         Resort the data ordering to match what topas expects
@@ -133,6 +139,31 @@ class MagneticFieldMap:
         self.tpsBx= Data[:, 3] * 1e3
         self.tpsBy = Data[:, 4] * 1e3
         self.tpsBz = Data[:, 5] * 1e3
+
+    def ReadComsolData(self):
+        """
+        Header:
+
+        % Model:              lens_convert.mph
+        % Version:            COMSOL 6.1.0.252
+        % Date:               Mar 13 2023, 16:27
+        % Dimension:          3
+        % Nodes:              226981
+        % Expressions:        3
+        % Description:        Magnetic flux density, x-component, Magnetic flux density, y-component, Magnetic flux density, z-component
+        % Length unit:        mm
+        % X                       Y                        Z                        mf.Bx (T)                mf.By (T)                mf.Bz (T)
+
+        :return:
+        """
+        Data = np.loadtxt(self.ComsolFile, skiprows=9)
+
+        self.x = Data[:, 0]
+        self.y = Data[:, 1]
+        self.z = Data[:, 2]
+        self.Bx = Data[:, 3]
+        self.By = Data[:, 4]
+        self.Bz = Data[:, 5]
 
     def CheckXYZpoints(self,X,Y,Z):
         """
@@ -317,7 +348,10 @@ class MagneticFieldMap:
 
 
         #2. Output as opera format:
-        PathName, Filetype = os.path.splitext(self.CSTfile)
+        if self.ComsolFile:
+            PathName, Filetype = os.path.splitext(self.ComsolFile)
+        elif self.CSTfile:
+            PathName, Filetype = os.path.splitext(self.CSTfile)
         PathName, FileName = os.path.split(PathName)
         OutFile = PathName + '/' + FileName + '_Opera.TABLE'
 

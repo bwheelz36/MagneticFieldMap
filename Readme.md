@@ -3,7 +3,7 @@
 ## update: solved
 
 You can read about the origins of this problem below, but I have now solved it. It turns out that topas requires input data to be sorted in a given way (and doesn't check whether it is or not). 
-The method __SortCSTData within TopasBfieldAnalysis.py resorts the CST data. after this, the problems outlined below dissapeared.
+The method __`sort_field_data` within TopasBfieldAnalysis.py resorts the CST data. after this, the problems outlined below dissapeared.
 
 ## initial query
 
