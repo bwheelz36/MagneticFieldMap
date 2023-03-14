@@ -52,6 +52,11 @@ class MagneticFieldMap:
         else:
             logging.warning('No topas file provided; will not be able to compare topas data to CST data')
 
+    def _set_out_file(self, in_file):
+        PathName, Filetype = os.path.splitext(in_file)
+        self._PathName, FileName = os.path.split(PathName)
+        self._OutFile = self._PathName + '/' + FileName + '_Opera.TABLE'
+
     def ReadCSTdata(self):
         # 1. Read FileIn to numpy array:
         Data = np.loadtxt(self.CSTfile, skiprows=2)
@@ -63,7 +68,8 @@ class MagneticFieldMap:
         self.By = Data[:, 5]
         self.Bz = Data[:, 7]
 
-        self.sort_field_data()
+        self._set_out_file(self.CSTfile)
+
         # # Print some info about the coordinates
         # print(f'Min x:  {min(x): 1.1f}    Max x: {max(x): 1.1f}')
         # print(f'Min y:  {min(y): 1.1f}    Max y: {max(y): 1.1f}')
@@ -91,6 +97,7 @@ class MagneticFieldMap:
         self.Bx = Data[:, 3]
         self.By = Data[:, 4]
         self.Bz = Data[:, 5]
+        self._set_out_file(self.OperaFile)
 
     def sort_field_data(self):
         """
@@ -164,6 +171,7 @@ class MagneticFieldMap:
         self.Bx = Data[:, 3]
         self.By = Data[:, 4]
         self.Bz = Data[:, 5]
+        self._set_out_file(self.ComsolFile)
 
     def CheckXYZpoints(self,X,Y,Z):
         """
@@ -337,34 +345,24 @@ class MagneticFieldMap:
         axs[1].plot(self.y)
         axs[2].plot(self.z)
 
-
     def OutputOperaFormat(self):
         """
         If a CST file is read in you can use this to output the opera format.
         """
-
-        FakeField = np.ones(self.Bx.shape[0]) * .002 # for making table of zeros
-        FakeField2 =np.zeros(self.Bx.shape[0]) # for making table of zeros
-
-
-        #2. Output as opera format:
-        if self.ComsolFile:
-            PathName, Filetype = os.path.splitext(self.ComsolFile)
-        elif self.CSTfile:
-            PathName, Filetype = os.path.splitext(self.CSTfile)
-        PathName, FileName = os.path.split(PathName)
-        OutFile = PathName + '/' + FileName + '_Opera.TABLE'
-
+        try:
+            test = self._OutFile
+        except AttributeError:
+            raise AttributeError('output file not set because Im a sloppy coder')
 
         HeaderString = '\n' + str(np.unique(self.x).shape[0]) + ' ' + str(np.unique(self.y).shape[0]) + ' ' + str(np.unique(self.z).shape[0]) + \
                        '\n 1 X [M]\n 2 Y [M]\n 3 Z [M]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'
         DataOut = [self.x/1e3,self.y/1e3,self.z/1e3,self.Bx,self.By,self.Bz]
         DataOut = np.transpose(DataOut)
         FormatSpec = ['%11.5f', '%11.5f', '%11.5f', '%11.5e', '%11.5e', '%11.5e']
-        np.savetxt(OutFile, DataOut, fmt=FormatSpec, delimiter='      ', header=HeaderString,comments='')
+        np.savetxt(self._OutFile, DataOut, fmt=FormatSpec, delimiter='      ', header=HeaderString,comments='')
 
         ## Make fake data of zeros for trouble shooting
-        OutFile = PathName + '/' + 'FakeData_Opera.TABLE'
+        OutFile = self._PathName + '/' + 'FakeData_Opera.TABLE'
         HeaderString = '\n' + str(np.unique(self.x).shape[0]) + ' ' + str(np.unique(self.y).shape[0]) + ' ' + str(
             np.unique(self.z).shape[0]) + \
                        '\n 1 X [M]\n 2 Y [M]\n 3 Z [M]\n 4 BX [TESLA]\n 5 BY [TESLA]\n 6 BZ [TESLA]\n 0'
